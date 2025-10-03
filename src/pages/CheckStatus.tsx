@@ -18,10 +18,15 @@ interface Registration {
   expiry_date: string;
   fee: number | null;
   category_id: string;
+  ward: string;
+  panchayath_id: string;
   categories: {
     name_english: string;
     name_malayalam: string;
     qr_code_url?: string;
+  } | null;
+  panchayaths: {
+    name: string;
   } | null;
 }
 const CheckStatus = () => {
@@ -44,6 +49,9 @@ const CheckStatus = () => {
             name_english,
             name_malayalam,
             qr_code_url
+          ),
+          panchayaths (
+            name
           )
         `).or(`mobile_number.eq.${searchQuery},customer_id.eq.${searchQuery}`).maybeSingle();
       if (error) {
@@ -147,6 +155,14 @@ const CheckStatus = () => {
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Mobile Number</Label>
                     <p className="text-lg font-semibold">{registration.mobile_number}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Panchayath</Label>
+                    <p className="text-lg font-semibold">{registration.panchayaths?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Ward</Label>
+                    <p className="text-lg font-semibold">{registration.ward || 'N/A'}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Category</Label>
