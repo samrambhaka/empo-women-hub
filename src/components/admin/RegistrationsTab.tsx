@@ -711,6 +711,7 @@ const RegistrationsTab = () => {
                       <TableHead className="min-w-[120px]">Customer ID</TableHead>
                       <TableHead className="min-w-[150px]">Name</TableHead>
                       <TableHead className="min-w-[120px]">Mobile</TableHead>
+                      <TableHead className="min-w-[100px]">Ward</TableHead>
                       <TableHead className="min-w-[200px]">Address</TableHead>
                       <TableHead className="min-w-[120px]">Panchayath</TableHead>
                       <TableHead className="min-w-[180px]">Category</TableHead>
@@ -726,28 +727,31 @@ const RegistrationsTab = () => {
                       return (
                         <TableRow key={reg.id} className={`${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`}>
                            <TableCell>
-                             <Checkbox
-                               checked={selectedRegistrations.includes(reg.id)}
-                               onCheckedChange={(checked) => handleSelectRegistration(reg.id, checked as boolean)}
-                               disabled={reg.status !== 'pending'}
-                               aria-label={`Select registration ${reg.customer_id}`}
-                             />
-                           </TableCell>
-                           <TableCell className="font-medium font-mono text-xs truncate">{reg.customer_id}</TableCell>
-                           <TableCell className="p-2">
-                             <div className="font-medium text-sm truncate">{reg.full_name}</div>
-                           </TableCell>
-                           <TableCell className="p-2">
-                             <div className="text-sm">{reg.mobile_number}</div>
-                           </TableCell>
-                           <TableCell className="p-2">
-                             <div className="text-sm truncate" title={reg.address}>{reg.address}</div>
-                           </TableCell>
-                           <TableCell className="p-2">
-                             <div className="text-sm truncate">
-                               {reg.panchayaths?.name || 'N/A'}
-                             </div>
-                           </TableCell>
+                              <Checkbox
+                                checked={selectedRegistrations.includes(reg.id)}
+                                onCheckedChange={(checked) => handleSelectRegistration(reg.id, checked as boolean)}
+                                disabled={reg.status !== 'pending'}
+                                aria-label={`Select registration ${reg.customer_id}`}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium font-mono text-xs truncate">{reg.customer_id}</TableCell>
+                            <TableCell className="p-2">
+                              <div className="font-medium text-sm truncate">{reg.full_name}</div>
+                            </TableCell>
+                            <TableCell className="p-2">
+                              <div className="text-sm">{reg.mobile_number}</div>
+                            </TableCell>
+                            <TableCell className="p-2">
+                              <div className="text-sm truncate">{reg.ward || 'N/A'}</div>
+                            </TableCell>
+                            <TableCell className="p-2">
+                              <div className="text-sm truncate" title={reg.address}>{reg.address}</div>
+                            </TableCell>
+                            <TableCell className="p-2">
+                              <div className="text-sm truncate">
+                                {reg.panchayaths?.name || 'N/A'}
+                              </div>
+                            </TableCell>
                           <TableCell>
                             <div className="space-y-2">
                               <div className="text-sm">
