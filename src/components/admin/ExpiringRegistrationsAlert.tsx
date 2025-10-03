@@ -10,7 +10,8 @@ interface ExpiringRegistration {
   name: string;
   phone: string;
   category: string;
-  location: string;
+  panchayath: string;
+  ward: string;
   created_at: string;
   expiry_date: string;
 }
@@ -36,13 +37,14 @@ const ExpiringRegistrationsAlert = ({
     setIsExporting(true);
     try {
       // Create CSV data for Excel
-      const headers = ['Name', 'Mobile Number', 'Panchayath', 'Category', 'Created Date', 'Expiry Date'];
+      const headers = ['Name', 'Mobile Number', 'Panchayath', 'Ward', 'Category', 'Created Date', 'Expiry Date'];
       const csvData = [
         headers.join(','),
         ...registrations.map(reg => [
           reg.name,
           reg.phone,
-          reg.location,
+          reg.panchayath,
+          reg.ward,
           reg.category,
           format(new Date(reg.created_at), 'dd/MM/yyyy'),
           format(new Date(reg.expiry_date), 'dd/MM/yyyy')
@@ -85,7 +87,8 @@ const ExpiringRegistrationsAlert = ({
               <div class="registration">
                 <div class="header">${reg.name}</div>
                 <p><strong>Mobile Number:</strong> ${reg.phone}</p>
-                <p><strong>Panchayath:</strong> ${reg.location}</p>
+                <p><strong>Panchayath:</strong> ${reg.panchayath}</p>
+                <p><strong>Ward:</strong> ${reg.ward}</p>
                 <p><strong>Category:</strong> ${reg.category}</p>
                 <p><strong>Created:</strong> ${format(new Date(reg.created_at), 'dd/MM/yyyy')}</p>
                 <p><strong>Expiry Date:</strong> <span class="days-remaining">${format(new Date(reg.expiry_date), 'dd/MM/yyyy')}</span></p>
@@ -147,7 +150,12 @@ const handleGotIt = () => {
                   
                   <div className="flex items-center gap-2">
                     <MapPin className="h-3 w-3 text-muted-foreground" />
-                    <span>Panchayath: {registration.location}</span>
+                    <span>Panchayath: {registration.panchayath}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    <span>Ward: {registration.ward}</span>
                   </div>
                   
                   <div className="flex items-center gap-2">

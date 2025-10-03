@@ -11,7 +11,8 @@ interface ExpiringRegistration {
   name: string;
   phone: string;
   category: string;
-  location: string;
+  panchayath: string;
+  ward: string;
   created_at: string;
   expiry_date: string;
 }
@@ -36,10 +37,11 @@ const NotificationBell = () => {
           full_name,
           mobile_number,
           customer_id,
-          address,
+          ward,
           created_at,
           expiry_date,
-          categories!registrations_category_id_fkey(name_english)
+          categories!registrations_category_id_fkey(name_english),
+          panchayaths(name)
         `)
         .eq('status', 'pending');
 
@@ -57,7 +59,8 @@ const NotificationBell = () => {
             name: reg.full_name,
             phone: reg.mobile_number,
             category: reg.categories?.name_english || 'Unknown',
-            location: reg.address,
+            panchayath: reg.panchayaths?.name || 'N/A',
+            ward: reg.ward || 'N/A',
             created_at: reg.created_at,
             expiry_date: reg.expiry_date
           };
