@@ -15,6 +15,7 @@ interface Category {
   offer_fee: number;
   offer_start_date?: string;
   offer_end_date?: string;
+  is_active: boolean;
 }
 
 const Categories = () => {
@@ -46,7 +47,6 @@ const Categories = () => {
     const { data } = await supabase
       .from('categories')
       .select('*')
-      .eq('is_active', true)
       .order('name_english');
     
     if (data) setCategories(data);
@@ -85,6 +85,35 @@ const Categories = () => {
               'bg-category-indigo border-category-indigo-foreground text-category-indigo-foreground'
             ];
             const colorClass = colorClasses[index % colorClasses.length];
+            
+            // If category is inactive, show "Will be active soon" card
+            if (!category.is_active) {
+              return (
+                <Card 
+                  key={category.id} 
+                  className="border-2 border-muted bg-muted/30 opacity-75"
+                >
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      <div className="text-muted-foreground">{category.name_english}</div>
+                      <div className="text-base font-normal mt-1 text-muted-foreground/80">
+                        {category.name_malayalam}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <p className="text-center text-muted-foreground font-semibold mb-2">
+                        Will be active soon
+                      </p>
+                      <p className="text-center text-sm text-muted-foreground/70">
+                        ഉടൻ സജീവമാകും
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
             
             return (
                 <Card 

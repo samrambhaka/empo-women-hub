@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -509,15 +510,15 @@ const CategoriesTab = () => {
                           {category.name_malayalam}
                         </p>
                       </div>
-                      <Badge 
-                        className={`${category.is_active 
-                          ? 'bg-green-500/20 text-green-700 border-green-500/30' 
-                          : 'bg-red-500/20 text-red-700 border-red-500/30'
-                        } cursor-pointer`}
-                        onClick={() => toggleCategoryStatus(category)}
-                      >
-                        {category.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium ${category.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                          {category.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        <Switch
+                          checked={category.is_active}
+                          onCheckedChange={() => toggleCategoryStatus(category)}
+                        />
+                      </div>
                     </div>
                     
                     {category.description && (
