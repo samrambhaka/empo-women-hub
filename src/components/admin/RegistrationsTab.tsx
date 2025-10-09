@@ -560,48 +560,48 @@ const RegistrationsTab = () => {
   });
 
   const stats = {
-    total: registrations.length,
-    pending: registrations.filter(r => r.status === 'pending').length,
-    approved: registrations.filter(r => r.status === 'approved').length,
-    rejected: registrations.filter(r => r.status === 'rejected').length,
+    total: filteredRegistrations.length,
+    pending: filteredRegistrations.filter(r => r.status === 'pending').length,
+    approved: filteredRegistrations.filter(r => r.status === 'approved').length,
+    rejected: filteredRegistrations.filter(r => r.status === 'rejected').length,
   };
 
   return (
     <>
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{stats.total}</p>
-              <p className="text-sm text-muted-foreground mt-1">Total</p>
+              <p className="text-3xl font-bold text-primary">{stats.total}</p>
+              <p className="text-sm font-medium text-muted-foreground mt-1">Total</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground mt-1">Pending</p>
+              <p className="text-3xl font-bold text-amber-600 dark:text-amber-500">{stats.pending}</p>
+              <p className="text-sm font-medium text-muted-foreground mt-1">Pending</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
-              <p className="text-sm text-muted-foreground mt-1">Approved</p>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-500">{stats.approved}</p>
+              <p className="text-sm font-medium text-muted-foreground mt-1">Approved</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-gradient-to-br from-red-500/10 to-red-500/5 border-red-500/20">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
-              <p className="text-sm text-muted-foreground mt-1">Rejected</p>
+              <p className="text-3xl font-bold text-red-600 dark:text-red-500">{stats.rejected}</p>
+              <p className="text-sm font-medium text-muted-foreground mt-1">Rejected</p>
             </div>
           </CardContent>
         </Card>
