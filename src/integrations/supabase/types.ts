@@ -143,6 +143,134 @@ export type Database = {
         }
         Relationships: []
       }
+      cached_agents: {
+        Row: {
+          created_at: string | null
+          external_id: string | null
+          external_panchayath_id: string | null
+          external_ward_id: string | null
+          id: string
+          last_synced_at: string | null
+          name: string
+          panchayath_id: string | null
+          phone: string | null
+          updated_at: string | null
+          ward_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id?: string | null
+          external_panchayath_id?: string | null
+          external_ward_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name: string
+          panchayath_id?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          ward_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string | null
+          external_panchayath_id?: string | null
+          external_ward_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name?: string
+          panchayath_id?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          ward_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cached_agents_panchayath_id_fkey"
+            columns: ["panchayath_id"]
+            isOneToOne: false
+            referencedRelation: "cached_panchayaths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cached_agents_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "cached_wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cached_panchayaths: {
+        Row: {
+          created_at: string | null
+          district: string | null
+          external_id: string | null
+          id: string
+          last_synced_at: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          district?: string | null
+          external_id?: string | null
+          id: string
+          last_synced_at?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          district?: string | null
+          external_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cached_wards: {
+        Row: {
+          created_at: string | null
+          external_id: string | null
+          external_panchayath_id: string | null
+          id: string
+          last_synced_at: string | null
+          name: string
+          panchayath_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id?: string | null
+          external_panchayath_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name: string
+          panchayath_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string | null
+          external_panchayath_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name?: string
+          panchayath_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cached_wards_panchayath_id_fkey"
+            columns: ["panchayath_id"]
+            isOneToOne: false
+            referencedRelation: "cached_panchayaths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_accounts: {
         Row: {
           balance: number
