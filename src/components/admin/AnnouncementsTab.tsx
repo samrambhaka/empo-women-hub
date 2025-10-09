@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -18,6 +18,7 @@ interface Announcement {
   content: string;
   is_active: boolean;
   created_at: string;
+  image_url?: string;
 }
 
 const AnnouncementsTab = () => {
@@ -29,6 +30,9 @@ const AnnouncementsTab = () => {
     title: '',
     content: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -60,6 +64,8 @@ const AnnouncementsTab = () => {
       content: ''
     });
     setEditingAnnouncement(null);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleAddNew = () => {
@@ -73,7 +79,65 @@ const AnnouncementsTab = () => {
       content: announcement.content
     });
     setEditingAnnouncement(announcement);
+    setImagePreview(announcement.image_url || null);
     setShowDialog(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const uploadImage = async (announcementId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    try {
+      setUploading(true);
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${announcementId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('announcement-images')
+        .upload(filePath, imageFile, { upsert: true });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('announcement-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Error uploading image');
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,9 +150,16 @@ const AnnouncementsTab = () => {
 
     try {
       if (editingAnnouncement) {
+        let imageUrl = editingAnnouncement.image_url;
+        
+        if (imageFile) {
+          const uploadedUrl = await uploadImage(editingAnnouncement.id);
+          if (uploadedUrl) imageUrl = uploadedUrl;
+        }
+
         const { error } = await supabase
           .from('announcements')
-          .update(formData)
+          .update({ ...formData, image_url: imageUrl })
           .eq('id', editingAnnouncement.id);
 
         if (error) {
@@ -100,13 +171,26 @@ const AnnouncementsTab = () => {
           resetForm();
         }
       } else {
-        const { error } = await supabase
+        const { data: newAnnouncement, error } = await supabase
           .from('announcements')
-          .insert(formData);
+          .insert(formData)
+          .select()
+          .single();
 
         if (error) {
           toast.error('Error creating announcement');
         } else {
+          let imageUrl = null;
+          if (imageFile && newAnnouncement) {
+            imageUrl = await uploadImage(newAnnouncement.id);
+            if (imageUrl) {
+              await supabase
+                .from('announcements')
+                .update({ image_url: imageUrl })
+                .eq('id', newAnnouncement.id);
+            }
+          }
+          
           toast.success('Announcement created successfully');
           setShowDialog(false);
           fetchAnnouncements();
@@ -199,9 +283,47 @@ const AnnouncementsTab = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="image">Announcement Image</Label>
+                  <div className="space-y-2">
+                    {imagePreview ? (
+                      <div className="relative inline-block">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="max-w-full h-40 object-cover rounded-md border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1"
+                          onClick={removeImage}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="flex-1"
+                        />
+                        <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Max size: 5MB. Supported formats: JPG, PNG, GIF, WebP
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">
-                    {editingAnnouncement ? 'Update' : 'Create'}
+                  <Button type="submit" className="flex-1" disabled={uploading}>
+                    {uploading ? 'Uploading...' : editingAnnouncement ? 'Update' : 'Create'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                     Cancel
@@ -221,6 +343,7 @@ const AnnouncementsTab = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Image</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Content</TableHead>
                   <TableHead>Status</TableHead>
@@ -231,6 +354,19 @@ const AnnouncementsTab = () => {
               <TableBody>
                 {announcements.map((announcement) => (
                   <TableRow key={announcement.id}>
+                    <TableCell>
+                      {announcement.image_url ? (
+                        <img 
+                          src={announcement.image_url} 
+                          alt={announcement.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{announcement.title}</TableCell>
                     <TableCell className="max-w-xs truncate">{announcement.content}</TableCell>
                     <TableCell>
