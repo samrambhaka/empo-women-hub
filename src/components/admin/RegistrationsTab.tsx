@@ -559,11 +559,58 @@ const RegistrationsTab = () => {
     return matchesSearch && matchesStatus && matchesCategory && matchesPanchayath && matchesExpiry;
   });
 
+  const stats = {
+    total: registrations.length,
+    pending: registrations.filter(r => r.status === 'pending').length,
+    approved: registrations.filter(r => r.status === 'approved').length,
+    rejected: registrations.filter(r => r.status === 'rejected').length,
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Registration Management</CardTitle>
-        <div className="space-y-3 mt-4">
+    <>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{stats.total}</p>
+              <p className="text-sm text-muted-foreground mt-1">Total</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+              <p className="text-sm text-muted-foreground mt-1">Pending</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+              <p className="text-sm text-muted-foreground mt-1">Approved</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+              <p className="text-sm text-muted-foreground mt-1">Rejected</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Registration Management</CardTitle>
+          <div className="space-y-3 mt-4">
           {/* Search Bar - Full width on mobile */}
           <div className="w-full">
             <div className="relative">
@@ -1030,6 +1077,7 @@ const RegistrationsTab = () => {
         onSuccess={handleEditSuccess}
       />
     </Card>
+    </>
   );
 };
 
