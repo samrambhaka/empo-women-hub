@@ -7,6 +7,7 @@ import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Categories from "./pages/Categories";
+import SelectJob from "./pages/SelectJob";
 import CheckStatus from "./pages/CheckStatus";
 import Utilities from "./pages/Utilities";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/select-job" element={<SelectJob />} />
             <Route path="/status" element={<CheckStatus />} />
             <Route path="/utilities" element={<Utilities />} />
             <Route path="/admin/login" element={<AdminLogin />} />
