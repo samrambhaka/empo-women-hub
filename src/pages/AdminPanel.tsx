@@ -13,6 +13,7 @@ import AccountsTab from '@/components/admin/AccountsTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import AdminUsersTab from '@/components/admin/AdminUsersTab';
 import CategoryTransferTab from '@/components/admin/CategoryTransferTab';
+import ProgramsTab from '@/components/admin/ProgramsTab';
 import NotificationBell from '@/components/admin/NotificationBell';
 
 const AdminPanel = () => {
@@ -33,6 +34,7 @@ const AdminPanel = () => {
   // Permission-based tab visibility
   const canViewRegistrations = hasPermission('manage_registrations') || hasPermission('users_read');
   const canViewCategories = hasPermission('manage_categories') || hasPermission('categories_read');
+  const canViewPrograms = hasPermission('manage_categories') || hasPermission('categories_read');
   const canViewPanchayaths = hasPermission('panchayaths_read') || hasPermission('panchayaths_write');
   const canViewAnnouncements = hasPermission('announcements_read') || hasPermission('announcements_write');
   const canViewUtilities = hasPermission('manage_utilities') || hasPermission('utilities_read');
@@ -45,6 +47,7 @@ const AdminPanel = () => {
   const getDefaultTab = () => {
     if (canViewRegistrations) return 'registrations';
     if (canViewCategories) return 'categories';
+    if (canViewPrograms) return 'programs';
     if (canViewPanchayaths) return 'panchayaths';
     if (canViewAnnouncements) return 'announcements';
     if (canViewUtilities) return 'utilities';
@@ -75,7 +78,7 @@ const AdminPanel = () => {
         
         <Tabs defaultValue={getDefaultTab()} className="w-full">
           <div className="overflow-x-auto">
-            <TabsList className="flex w-max sm:grid sm:w-full h-auto p-1" style={{ gridTemplateColumns: `repeat(${[canViewRegistrations, canViewCategories, canViewPanchayaths, canViewAnnouncements, canViewUtilities, canViewAccounts, canViewReports, canViewAdminUsers, canViewTransfers].filter(Boolean).length}, 1fr)` }}>
+            <TabsList className="flex w-max sm:grid sm:w-full h-auto p-1" style={{ gridTemplateColumns: `repeat(${[canViewRegistrations, canViewCategories, canViewPrograms, canViewPanchayaths, canViewAnnouncements, canViewUtilities, canViewAccounts, canViewReports, canViewAdminUsers, canViewTransfers].filter(Boolean).length}, 1fr)` }}>
               {canViewRegistrations && (
                 <TabsTrigger value="registrations" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
                   Registrations
@@ -84,6 +87,11 @@ const AdminPanel = () => {
               {canViewCategories && (
                 <TabsTrigger value="categories" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
                   Categories
+                </TabsTrigger>
+              )}
+              {canViewPrograms && (
+                <TabsTrigger value="programs" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                  Programs
                 </TabsTrigger>
               )}
               {canViewPanchayaths && (
@@ -133,6 +141,12 @@ const AdminPanel = () => {
           {canViewCategories && (
             <TabsContent value="categories">
               <CategoriesTab />
+            </TabsContent>
+          )}
+          
+          {canViewPrograms && (
+            <TabsContent value="programs">
+              <ProgramsTab />
             </TabsContent>
           )}
           

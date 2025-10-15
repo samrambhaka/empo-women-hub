@@ -7,30 +7,39 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+interface Program {
+  id: string;
+  category_id: string;
+  name_english: string;
+  name_malayalam: string;
+  description: string | null;
+  is_active: boolean;
+  display_order: number;
+}
+
 interface Category {
   id: string;
   name_english: string;
   name_malayalam: string;
   description: string | null;
-  actual_fee: number;
-  offer_fee: number;
-  expiry_days: number;
 }
 
 const SelectJob = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
+    fetchPrograms();
   }, []);
 
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, name_english, name_malayalam, description')
         .eq('is_active', true)
         .not('name_english', 'in', '("Pennyekart Free Registration","Pennyekart Paid Registration")')
         .order('name_english');
@@ -42,6 +51,25 @@ const SelectJob = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPrograms = async () => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('programs')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+
+      if (error) throw error;
+      setPrograms(data || []);
+    } catch (error) {
+      console.error('Error fetching programs:', error);
+    }
+  };
+
+  const getProgramsForCategory = (categoryId: string) => {
+    return programs.filter(p => p.category_id === categoryId);
   };
 
   return (
@@ -88,38 +116,20 @@ const SelectJob = () => {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-4">
-                  <div className="space-y-4">
-                    {category.description && (
-                      <p className="text-sm text-muted-foreground">{category.description}</p>
+                  <div className="space-y-3">
+                    {getProgramsForCategory(category.id).length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4">No programs available for this category.</p>
+                    ) : (
+                      getProgramsForCategory(category.id).map((program) => (
+                        <div key={program.id} className="bg-muted/50 p-4 rounded-lg">
+                          <h4 className="font-semibold">{program.name_english}</h4>
+                          <p className="text-sm text-muted-foreground">{program.name_malayalam}</p>
+                          {program.description && (
+                            <p className="text-sm mt-2">{program.description}</p>
+                          )}
+                        </div>
+                      ))
                     )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Registration Fee</p>
-                        <p className="text-xl font-bold">
-                          ₹{category.offer_fee > 0 ? category.offer_fee : category.actual_fee}
-                        </p>
-                        {category.offer_fee > 0 && category.offer_fee < category.actual_fee && (
-                          <p className="text-xs text-muted-foreground line-through">
-                            ₹{category.actual_fee}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Validity Period</p>
-                        <p className="text-xl font-bold">{category.expiry_days} days</p>
-                      </div>
-                      
-                      <div className="flex items-center justify-center">
-                        <Button 
-                          onClick={() => navigate('/', { state: { selectedCategory: category.id } })}
-                          className="w-full"
-                        >
-                          Apply Now
-                        </Button>
-                      </div>
-                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
