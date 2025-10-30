@@ -77,60 +77,58 @@ const AdminPanel = () => {
         </div>
         
         <Tabs defaultValue={getDefaultTab()} className="w-full">
-          <div className="overflow-x-auto">
-            <TabsList className="flex w-max sm:grid sm:w-full h-auto p-1" style={{ gridTemplateColumns: `repeat(${[canViewRegistrations, canViewCategories, canViewPrograms, canViewPanchayaths, canViewAnnouncements, canViewUtilities, canViewAccounts, canViewReports, canViewAdminUsers, canViewTransfers].filter(Boolean).length}, 1fr)` }}>
-              {canViewRegistrations && (
-                <TabsTrigger value="registrations" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Registrations
-                </TabsTrigger>
-              )}
-              {canViewCategories && (
-                <TabsTrigger value="categories" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Categories
-                </TabsTrigger>
-              )}
-              {canViewPrograms && (
-                <TabsTrigger value="programs" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Programs
-                </TabsTrigger>
-              )}
-              {canViewPanchayaths && (
-                <TabsTrigger value="panchayaths" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Panchayaths
-                </TabsTrigger>
-              )}
-              {canViewAnnouncements && (
-                <TabsTrigger value="announcements" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Announcements
-                </TabsTrigger>
-              )}
-              {canViewUtilities && (
-                <TabsTrigger value="utilities" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Utilities
-                </TabsTrigger>
-              )}
-              {canViewAccounts && (
-                <TabsTrigger value="accounts" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Accounts
-                </TabsTrigger>
-              )}
-              {canViewReports && (
-                <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Reports
-                </TabsTrigger>
-              )}
-              {canViewAdminUsers && (
-                <TabsTrigger value="admin-users" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Admin Users
-                </TabsTrigger>
-              )}
-              {canViewTransfers && (
-                <TabsTrigger value="transfers" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                  Transfers
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+          <TabsList className="flex flex-wrap w-full h-auto p-1 gap-1">
+            {canViewRegistrations && (
+              <TabsTrigger value="registrations" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Registrations
+              </TabsTrigger>
+            )}
+            {canViewCategories && (
+              <TabsTrigger value="categories" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Categories
+              </TabsTrigger>
+            )}
+            {canViewPrograms && (
+              <TabsTrigger value="programs" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Programs
+              </TabsTrigger>
+            )}
+            {canViewPanchayaths && (
+              <TabsTrigger value="panchayaths" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Panchayaths
+              </TabsTrigger>
+            )}
+            {canViewAnnouncements && (
+              <TabsTrigger value="announcements" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Announcements
+              </TabsTrigger>
+            )}
+            {canViewUtilities && (
+              <TabsTrigger value="utilities" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Utilities
+              </TabsTrigger>
+            )}
+            {canViewAccounts && (
+              <TabsTrigger value="accounts" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Accounts
+              </TabsTrigger>
+            )}
+            {canViewReports && (
+              <TabsTrigger value="reports" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Reports
+              </TabsTrigger>
+            )}
+            {canViewAdminUsers && (
+              <TabsTrigger value="admin-users" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Admin Users
+              </TabsTrigger>
+            )}
+            {canViewTransfers && (
+              <TabsTrigger value="transfers" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Transfers
+              </TabsTrigger>
+            )}
+          </TabsList>
           
           {canViewRegistrations && (
             <TabsContent value="registrations">
