@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const categoryColors = [
   'blue', 'green', 'purple', 'orange', 'pink', 'indigo'
@@ -34,6 +35,16 @@ interface Category {
   offer_end_date?: string;
 }
 
+interface Subcategory {
+  id: string;
+  category_id: string;
+  name_english: string;
+  name_malayalam: string;
+  description?: string;
+  is_active: boolean;
+  display_order: number;
+}
+
 const CategoriesTab = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +62,53 @@ const CategoriesTab = () => {
   });
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [qrPreview, setQrPreview] = useState<string | null>(null);
+  
+  // Subcategory state
+  const [subcategories, setSubcategories] = useState<Record<string, Subcategory[]>>({});
+  const [showSubcategoryDialog, setShowSubcategoryDialog] = useState(false);
+  const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(null);
+  const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
+  const [subcategoryFormData, setSubcategoryFormData] = useState({
+    name_english: '',
+    name_malayalam: '',
+    description: '',
+    display_order: 0
+  });
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const fetchSubcategories = async (categoryId: string) => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('subcategories')
+        .select('*')
+        .eq('category_id', categoryId)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      
+      setSubcategories(prev => ({
+        ...prev,
+        [categoryId]: data || []
+      }));
+    } catch (error) {
+      toast.error('Error fetching subcategories');
+    }
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+    
+    if (!expandedCategories[categoryId] && !subcategories[categoryId]) {
+      fetchSubcategories(categoryId);
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -278,6 +332,110 @@ const CategoriesTab = () => {
       }
     } catch (error) {
       toast.error('Error deleting category');
+    }
+  };
+
+  // Subcategory functions
+  const handleAddSubcategory = (categoryId: string) => {
+    setCurrentCategoryId(categoryId);
+    setEditingSubcategory(null);
+    setSubcategoryFormData({
+      name_english: '',
+      name_malayalam: '',
+      description: '',
+      display_order: 0
+    });
+    setShowSubcategoryDialog(true);
+  };
+
+  const handleEditSubcategory = (subcategory: Subcategory) => {
+    setCurrentCategoryId(subcategory.category_id);
+    setEditingSubcategory(subcategory);
+    setSubcategoryFormData({
+      name_english: subcategory.name_english,
+      name_malayalam: subcategory.name_malayalam,
+      description: subcategory.description || '',
+      display_order: subcategory.display_order
+    });
+    setShowSubcategoryDialog(true);
+  };
+
+  const handleSubmitSubcategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!subcategoryFormData.name_english || !subcategoryFormData.name_malayalam || !currentCategoryId) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      if (editingSubcategory) {
+        const { error } = await (supabase as any)
+          .from('subcategories')
+          .update({
+            name_english: subcategoryFormData.name_english,
+            name_malayalam: subcategoryFormData.name_malayalam,
+            description: subcategoryFormData.description,
+            display_order: subcategoryFormData.display_order
+          })
+          .eq('id', editingSubcategory.id);
+
+        if (error) throw error;
+        toast.success('Subcategory updated successfully');
+      } else {
+        const { error } = await (supabase as any)
+          .from('subcategories')
+          .insert({
+            category_id: currentCategoryId,
+            name_english: subcategoryFormData.name_english,
+            name_malayalam: subcategoryFormData.name_malayalam,
+            description: subcategoryFormData.description,
+            display_order: subcategoryFormData.display_order,
+            is_active: true
+          });
+
+        if (error) throw error;
+        toast.success('Subcategory created successfully');
+      }
+
+      setShowSubcategoryDialog(false);
+      if (currentCategoryId) {
+        fetchSubcategories(currentCategoryId);
+      }
+    } catch (error) {
+      toast.error('Error saving subcategory');
+    }
+  };
+
+  const toggleSubcategoryStatus = async (subcategory: Subcategory) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('subcategories')
+        .update({ is_active: !subcategory.is_active })
+        .eq('id', subcategory.id);
+
+      if (error) throw error;
+      toast.success('Subcategory status updated');
+      fetchSubcategories(subcategory.category_id);
+    } catch (error) {
+      toast.error('Error updating subcategory status');
+    }
+  };
+
+  const deleteSubcategory = async (subcategory: Subcategory) => {
+    if (!confirm('Are you sure you want to delete this subcategory?')) return;
+
+    try {
+      const { error } = await (supabase as any)
+        .from('subcategories')
+        .delete()
+        .eq('id', subcategory.id);
+
+      if (error) throw error;
+      toast.success('Subcategory deleted successfully');
+      fetchSubcategories(subcategory.category_id);
+    } catch (error) {
+      toast.error('Error deleting subcategory');
     }
   };
 
