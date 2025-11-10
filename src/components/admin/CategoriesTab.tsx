@@ -38,11 +38,8 @@ interface Category {
 interface Subcategory {
   id: string;
   category_id: string;
-  name_english: string;
-  name_malayalam: string;
-  description?: string;
-  is_active: boolean;
-  display_order: number;
+  name: string;
+  created_at?: string;
 }
 
 const CategoriesTab = () => {
@@ -69,10 +66,7 @@ const CategoriesTab = () => {
   const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(null);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [subcategoryFormData, setSubcategoryFormData] = useState({
-    name_english: '',
-    name_malayalam: '',
-    description: '',
-    display_order: 0
+    name: ''
   });
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
@@ -83,10 +77,10 @@ const CategoriesTab = () => {
   const fetchSubcategories = async (categoryId: string) => {
     try {
       const { data, error } = await (supabase as any)
-        .from('subcategories')
+        .from('sub_categories')
         .select('*')
         .eq('category_id', categoryId)
-        .order('display_order', { ascending: true });
+        .order('name_english', { ascending: true });
 
       if (error) throw error;
       
@@ -340,10 +334,7 @@ const CategoriesTab = () => {
     setCurrentCategoryId(categoryId);
     setEditingSubcategory(null);
     setSubcategoryFormData({
-      name_english: '',
-      name_malayalam: '',
-      description: '',
-      display_order: 0
+      name: ''
     });
     setShowSubcategoryDialog(true);
   };
@@ -352,10 +343,7 @@ const CategoriesTab = () => {
     setCurrentCategoryId(subcategory.category_id);
     setEditingSubcategory(subcategory);
     setSubcategoryFormData({
-      name_english: subcategory.name_english,
-      name_malayalam: subcategory.name_malayalam,
-      description: subcategory.description || '',
-      display_order: subcategory.display_order
+      name: subcategory.name
     });
     setShowSubcategoryDialog(true);
   };
@@ -363,7 +351,7 @@ const CategoriesTab = () => {
   const handleSubmitSubcategory = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!subcategoryFormData.name_english || !subcategoryFormData.name_malayalam || !currentCategoryId) {
+    if (!subcategoryFormData.name || !currentCategoryId) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -371,12 +359,9 @@ const CategoriesTab = () => {
     try {
       if (editingSubcategory) {
         const { error } = await (supabase as any)
-          .from('subcategories')
+          .from('sub_categories')
           .update({
-            name_english: subcategoryFormData.name_english,
-            name_malayalam: subcategoryFormData.name_malayalam,
-            description: subcategoryFormData.description,
-            display_order: subcategoryFormData.display_order
+            name: subcategoryFormData.name
           })
           .eq('id', editingSubcategory.id);
 
@@ -384,14 +369,10 @@ const CategoriesTab = () => {
         toast.success('Subcategory updated successfully');
       } else {
         const { error } = await (supabase as any)
-          .from('subcategories')
+          .from('sub_categories')
           .insert({
             category_id: currentCategoryId,
-            name_english: subcategoryFormData.name_english,
-            name_malayalam: subcategoryFormData.name_malayalam,
-            description: subcategoryFormData.description,
-            display_order: subcategoryFormData.display_order,
-            is_active: true
+            name: subcategoryFormData.name
           });
 
         if (error) throw error;
@@ -407,27 +388,13 @@ const CategoriesTab = () => {
     }
   };
 
-  const toggleSubcategoryStatus = async (subcategory: Subcategory) => {
-    try {
-      const { error } = await (supabase as any)
-        .from('subcategories')
-        .update({ is_active: !subcategory.is_active })
-        .eq('id', subcategory.id);
-
-      if (error) throw error;
-      toast.success('Subcategory status updated');
-      fetchSubcategories(subcategory.category_id);
-    } catch (error) {
-      toast.error('Error updating subcategory status');
-    }
-  };
 
   const deleteSubcategory = async (subcategory: Subcategory) => {
     if (!confirm('Are you sure you want to delete this subcategory?')) return;
 
     try {
       const { error } = await (supabase as any)
-        .from('subcategories')
+        .from('sub_categories')
         .delete()
         .eq('id', subcategory.id);
 
@@ -651,82 +618,148 @@ const CategoriesTab = () => {
       
       <CardContent>
         {loading ? (
-          <div className="text-center py-8">Loading...</div>
+          <p>Loading categories...</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category, index) => {
-              const colorVariant = getCategoryColor(index);
-              return (
-                <Card key={category.id} className={`bg-category-${colorVariant} border-category-${colorVariant}-foreground/20`}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-3">
+          <div className="space-y-4">
+            {categories.map((category, index) => (
+              <Card key={category.id} className="border-l-4" style={{ borderLeftColor: `var(--${getCategoryColor(index)})` }}>
+                <CardContent className="p-4">
+                  <Collapsible 
+                    open={expandedCategories[category.id]} 
+                    onOpenChange={() => toggleCategory(category.id)}
+                  >
+                    <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h3 className={`font-semibold text-category-${colorVariant}-foreground mb-1`}>
-                          {category.name_english}
-                        </h3>
-                        <p className={`text-sm text-category-${colorVariant}-foreground/80 font-malayalam`}>
-                          {category.name_malayalam}
-                        </p>
+                        <div className="flex items-center gap-3 mb-2">
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-0 h-auto">
+                              {expandedCategories[category.id] ? (
+                                <ChevronUp className="w-5 h-5" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5" />
+                              )}
+                            </Button>
+                          </CollapsibleTrigger>
+                          <h3 className="text-lg font-semibold">{category.name_english}</h3>
+                          <p className="text-lg font-malayalam text-muted-foreground">{category.name_malayalam}</p>
+                          <Badge variant={category.is_active ? "default" : "secondary"}>
+                            {category.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+                        {category.description && (
+                          <p className="text-sm text-muted-foreground mb-2 ml-9">{category.description}</p>
+                        )}
+                        <div className="flex gap-4 text-sm ml-9">
+                          <span>Actual Fee: ₹{category.actual_fee}</span>
+                          <span>Offer Fee: ₹{category.offer_fee}</span>
+                          <span>Expiry: {category.expiry_days} days</span>
+                        </div>
+                        {category.offer_start_date && category.offer_end_date && (
+                          <div className="text-sm text-muted-foreground mt-1 ml-9">
+                            Offer Period: {new Date(category.offer_start_date).toLocaleDateString()} - {new Date(category.offer_end_date).toLocaleDateString()}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${category.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                          {category.is_active ? 'Active' : 'Inactive'}
-                        </span>
                         <Switch
                           checked={category.is_active}
                           onCheckedChange={() => toggleCategoryStatus(category)}
                         />
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(category)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteCategory(category.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    {category.description && (
-                      <p className={`text-sm text-category-${colorVariant}-foreground/70 mb-3 line-clamp-2`}>
-                        {category.description}
-                      </p>
-                    )}
-                    
-                    <div className="flex justify-between items-center mb-3">
-                      <div>
-                        <div className={`text-sm font-medium text-category-${colorVariant}-foreground`}>
-                          ₹{category.offer_fee}
+
+                    <CollapsibleContent className="mt-4 ml-9">
+                      <div className="border-t pt-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-sm font-semibold text-muted-foreground">Subcategories</h4>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleAddSubcategory(category.id)}
+                          >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Add Subcategory
+                          </Button>
                         </div>
-                        {category.actual_fee !== category.offer_fee && (
-                          <div className={`text-xs text-category-${colorVariant}-foreground/60 line-through`}>
-                            ₹{category.actual_fee}
+                        
+                        {subcategories[category.id] && subcategories[category.id].length > 0 ? (
+                          <div className="space-y-2">
+                            {subcategories[category.id].map((sub) => (
+                              <div key={sub.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                                <div className="flex-1">
+                                  <span className="font-medium text-sm">{sub.name}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => handleEditSubcategory(sub)}
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => deleteSubcategory(sub)}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">No subcategories yet</p>
                         )}
                       </div>
-                      <div className={`text-sm text-category-${colorVariant}-foreground/80`}>
-                        {category.expiry_days} days
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(category)}
-                        className={`flex-1 border-category-${colorVariant}-foreground/30 text-category-${colorVariant}-foreground hover:bg-category-${colorVariant}-foreground/10`}
-                      >
-                        <Edit className="w-3 h-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteCategory(category.id)}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </CardContent>
+      
+      {/* Subcategory Dialog */}
+      <Dialog open={showSubcategoryDialog} onOpenChange={setShowSubcategoryDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {editingSubcategory ? 'Edit Subcategory' : 'Add New Subcategory'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitSubcategory} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sub_name">Subcategory Name *</Label>
+              <Input
+                id="sub_name"
+                value={subcategoryFormData.name}
+                onChange={(e) => setSubcategoryFormData({ ...subcategoryFormData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowSubcategoryDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingSubcategory ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
