@@ -80,7 +80,7 @@ const CategoriesTab = () => {
         .from('sub_categories')
         .select('*')
         .eq('category_id', categoryId)
-        .order('name_english', { ascending: true });
+        .order('name', { ascending: true });
 
       if (error) throw error;
       
