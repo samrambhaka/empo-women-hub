@@ -566,6 +566,54 @@ export type Database = {
         }
         Relationships: []
       }
+      programs: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_top: boolean | null
+          name: string
+          priority: number | null
+          sub_category_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_top?: boolean | null
+          name: string
+          priority?: number | null
+          sub_category_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_top?: boolean | null
+          name?: string
+          priority?: number | null
+          sub_category_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
           correct_answer: string
@@ -731,109 +779,31 @@ export type Database = {
           },
         ]
       }
-      shared_link_submissions: {
+      sub_categories: {
         Row: {
+          category_id: string
           created_at: string | null
           id: string
-          registration_id: string
-          shared_link_id: string
+          name: string
         }
         Insert: {
+          category_id: string
           created_at?: string | null
           id?: string
-          registration_id: string
-          shared_link_id: string
+          name: string
         }
         Update: {
+          category_id?: string
           created_at?: string | null
           id?: string
-          registration_id?: string
-          shared_link_id?: string
+          name?: string
         }
         Relationships: [
           {
-            foreignKeyName: "shared_link_submissions_registration_id_fkey"
-            columns: ["registration_id"]
+            foreignKeyName: "sub_categories_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "registrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "shared_link_submissions_shared_link_id_fkey"
-            columns: ["shared_link_id"]
-            isOneToOne: false
-            referencedRelation: "shared_links"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      shared_links: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          mobile_number: string
-          share_code: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          mobile_number: string
-          share_code: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          mobile_number?: string
-          share_code?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      submissions: {
-        Row: {
-          answers: Json | null
-          id: string
-          mobile_number: string
-          participant_name: string
-          reference_mobile_number: string | null
-          score: number
-          shared_link_id: string | null
-          submitted_at: string | null
-          total_questions: number
-        }
-        Insert: {
-          answers?: Json | null
-          id?: string
-          mobile_number: string
-          participant_name: string
-          reference_mobile_number?: string | null
-          score?: number
-          shared_link_id?: string | null
-          submitted_at?: string | null
-          total_questions: number
-        }
-        Update: {
-          answers?: Json | null
-          id?: string
-          mobile_number?: string
-          participant_name?: string
-          reference_mobile_number?: string | null
-          score?: number
-          shared_link_id?: string | null
-          submitted_at?: string | null
-          total_questions?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "submissions_shared_link_id_fkey"
-            columns: ["shared_link_id"]
-            isOneToOne: false
-            referencedRelation: "shared_links"
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
@@ -873,18 +843,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      auto_approve_pennyekart_free: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      auto_approve_pennyekart_free: { Args: never; Returns: undefined }
       generate_customer_id: {
         Args: { mobile: string; name: string }
         Returns: string
       }
-      process_auto_approvals: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      process_auto_approvals: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never
