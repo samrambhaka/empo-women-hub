@@ -42,6 +42,17 @@ interface Subcategory {
   created_at?: string;
 }
 
+interface Program {
+  id: string;
+  category_id: string;
+  sub_category_id: string;
+  name: string;
+  description?: string;
+  is_top: boolean;
+  priority: number;
+  created_at?: string;
+}
+
 const CategoriesTab = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +80,19 @@ const CategoriesTab = () => {
     name: ''
   });
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedSubcategories, setExpandedSubcategories] = useState<Record<string, boolean>>({});
+
+  // Program state
+  const [programs, setPrograms] = useState<Record<string, Program[]>>({});
+  const [showProgramDialog, setShowProgramDialog] = useState(false);
+  const [currentSubcategoryId, setCurrentSubcategoryId] = useState<string | null>(null);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [programFormData, setProgramFormData] = useState({
+    name: '',
+    description: '',
+    is_top: false,
+    priority: 0
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -406,6 +430,128 @@ const CategoriesTab = () => {
     }
   };
 
+  // Program functions
+  const fetchPrograms = async (subcategoryId: string) => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('programs')
+        .select('*')
+        .eq('sub_category_id', subcategoryId)
+        .order('priority', { ascending: false })
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      
+      setPrograms(prev => ({
+        ...prev,
+        [subcategoryId]: data || []
+      }));
+    } catch (error) {
+      toast.error('Error fetching programs');
+    }
+  };
+
+  const toggleSubcategory = (subcategoryId: string) => {
+    setExpandedSubcategories(prev => ({
+      ...prev,
+      [subcategoryId]: !prev[subcategoryId]
+    }));
+    
+    if (!expandedSubcategories[subcategoryId] && !programs[subcategoryId]) {
+      fetchPrograms(subcategoryId);
+    }
+  };
+
+  const handleAddProgram = (subcategoryId: string, categoryId: string) => {
+    setCurrentSubcategoryId(subcategoryId);
+    setCurrentCategoryId(categoryId);
+    setEditingProgram(null);
+    setProgramFormData({
+      name: '',
+      description: '',
+      is_top: false,
+      priority: 0
+    });
+    setShowProgramDialog(true);
+  };
+
+  const handleEditProgram = (program: Program) => {
+    setCurrentSubcategoryId(program.sub_category_id);
+    setCurrentCategoryId(program.category_id);
+    setEditingProgram(program);
+    setProgramFormData({
+      name: program.name,
+      description: program.description || '',
+      is_top: program.is_top,
+      priority: program.priority
+    });
+    setShowProgramDialog(true);
+  };
+
+  const handleSubmitProgram = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!programFormData.name || !currentSubcategoryId || !currentCategoryId) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      if (editingProgram) {
+        const { error } = await (supabase as any)
+          .from('programs')
+          .update({
+            name: programFormData.name,
+            description: programFormData.description || null,
+            is_top: programFormData.is_top,
+            priority: programFormData.priority
+          })
+          .eq('id', editingProgram.id);
+
+        if (error) throw error;
+        toast.success('Program updated successfully');
+      } else {
+        const { error } = await (supabase as any)
+          .from('programs')
+          .insert({
+            category_id: currentCategoryId,
+            sub_category_id: currentSubcategoryId,
+            name: programFormData.name,
+            description: programFormData.description || null,
+            is_top: programFormData.is_top,
+            priority: programFormData.priority
+          });
+
+        if (error) throw error;
+        toast.success('Program created successfully');
+      }
+
+      setShowProgramDialog(false);
+      if (currentSubcategoryId) {
+        fetchPrograms(currentSubcategoryId);
+      }
+    } catch (error) {
+      toast.error('Error saving program');
+    }
+  };
+
+  const deleteProgram = async (program: Program) => {
+    if (!confirm('Are you sure you want to delete this program?')) return;
+
+    try {
+      const { error } = await (supabase as any)
+        .from('programs')
+        .delete()
+        .eq('id', program.id);
+
+      if (error) throw error;
+      toast.success('Program deleted successfully');
+      fetchPrograms(program.sub_category_id);
+    } catch (error) {
+      toast.error('Error deleting program');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -691,29 +837,104 @@ const CategoriesTab = () => {
                         {subcategories[category.id] && subcategories[category.id].length > 0 ? (
                           <div className="space-y-2">
                             {subcategories[category.id].map((sub) => (
-                              <div key={sub.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                                <div className="flex-1">
-                                  <span className="font-medium text-sm">{sub.name}</span>
+                              <Collapsible
+                                key={sub.id}
+                                open={expandedSubcategories[sub.id]}
+                                onOpenChange={() => toggleSubcategory(sub.id)}
+                              >
+                                <div className="p-3 bg-muted/30 rounded-lg">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <CollapsibleTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                          {expandedSubcategories[sub.id] ? (
+                                            <ChevronUp className="w-4 h-4" />
+                                          ) : (
+                                            <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </Button>
+                                      </CollapsibleTrigger>
+                                      <span className="font-medium text-sm">{sub.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => handleEditSubcategory(sub)}
+                                      >
+                                        <Edit className="w-3 h-3" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => deleteSubcategory(sub)}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  <CollapsibleContent className="mt-3">
+                                    <div className="border-t pt-3 ml-6">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <h5 className="text-xs font-semibold text-muted-foreground">Programs</h5>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          className="h-7 text-xs"
+                                          onClick={() => handleAddProgram(sub.id, category.id)}
+                                        >
+                                          <Plus className="w-3 h-3 mr-1" />
+                                          Add Program
+                                        </Button>
+                                      </div>
+                                      
+                                      {programs[sub.id] && programs[sub.id].length > 0 ? (
+                                        <div className="space-y-2">
+                                          {programs[sub.id].map((program) => (
+                                            <div key={program.id} className="flex justify-between items-start p-2 bg-background/50 rounded border">
+                                              <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="font-medium text-xs">{program.name}</span>
+                                                  {program.is_top && (
+                                                    <Badge variant="secondary" className="text-xs px-1 py-0">Top</Badge>
+                                                  )}
+                                                  <Badge variant="outline" className="text-xs px-1 py-0">P: {program.priority}</Badge>
+                                                </div>
+                                                {program.description && (
+                                                  <p className="text-xs text-muted-foreground mt-1">{program.description}</p>
+                                                )}
+                                              </div>
+                                              <div className="flex items-center gap-1 ml-2">
+                                                <Button 
+                                                  variant="ghost" 
+                                                  size="icon"
+                                                  className="h-6 w-6"
+                                                  onClick={() => handleEditProgram(program)}
+                                                >
+                                                  <Edit className="w-3 h-3" />
+                                                </Button>
+                                                <Button 
+                                                  variant="ghost" 
+                                                  size="icon"
+                                                  className="h-6 w-6"
+                                                  onClick={() => deleteProgram(program)}
+                                                >
+                                                  <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <p className="text-xs text-muted-foreground text-center py-3">No programs yet</p>
+                                      )}
+                                    </div>
+                                  </CollapsibleContent>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleEditSubcategory(sub)}
-                                  >
-                                    <Edit className="w-3 h-3" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => deleteSubcategory(sub)}
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </div>
+                              </Collapsible>
                             ))}
                           </div>
                         ) : (
@@ -755,6 +976,75 @@ const CategoriesTab = () => {
               </Button>
               <Button type="submit">
                 {editingSubcategory ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Program Dialog */}
+      <Dialog open={showProgramDialog} onOpenChange={setShowProgramDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProgram ? 'Edit Program' : 'Add New Program'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitProgram} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="program_name">Program Name *</Label>
+              <Input
+                id="program_name"
+                value={programFormData.name}
+                onChange={(e) => setProgramFormData({ ...programFormData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="program_description">Description</Label>
+              <Textarea
+                id="program_description"
+                value={programFormData.description}
+                onChange={(e) => setProgramFormData({ ...programFormData, description: e.target.value })}
+                placeholder="Enter program description..."
+                className="min-h-[80px]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="program_priority">Priority</Label>
+                <Input
+                  id="program_priority"
+                  type="number"
+                  min="0"
+                  value={programFormData.priority}
+                  onChange={(e) => setProgramFormData({ ...programFormData, priority: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="program_is_top" className="flex items-center gap-2">
+                  <span>Mark as Top Program</span>
+                </Label>
+                <div className="flex items-center h-10">
+                  <Switch
+                    id="program_is_top"
+                    checked={programFormData.is_top}
+                    onCheckedChange={(checked) => setProgramFormData({ ...programFormData, is_top: checked })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowProgramDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingProgram ? 'Update' : 'Create'}
               </Button>
             </div>
           </form>
