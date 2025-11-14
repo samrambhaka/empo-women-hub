@@ -9,13 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Share2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
-
 interface Program {
   id: string;
   name: string;
   description: string | null;
 }
-
 interface Registration {
   id: string;
   customer_id: string;
@@ -113,28 +111,26 @@ const CheckStatus = () => {
   };
   const handleSelectJob = async () => {
     if (!registration) return;
-    
     setSelectingJob(true);
     try {
       // Check if it's a Job Card category (show all programs)
       const isJobCard = registration.categories?.name_english.toLowerCase().includes('job card');
-      
-      let query = supabase
-        .from('programs')
-        .select('id, name, description');
-      
+      let query = supabase.from('programs').select('id, name, description');
+
       // If not Job Card category, filter by category_id
       if (!isJobCard) {
         query = query.eq('category_id', registration.category_id);
       }
-      
-      const { data, error } = await query.order('priority', { ascending: false });
-      
+      const {
+        data,
+        error
+      } = await query.order('priority', {
+        ascending: false
+      });
       if (error) {
         toast.error('Error loading programs');
         return;
       }
-      
       setPrograms(data || []);
       setShowJobDialog(true);
     } catch (error) {
@@ -143,31 +139,27 @@ const CheckStatus = () => {
       setSelectingJob(false);
     }
   };
-
   const handleProgramSelect = async (programId: string) => {
     if (!registration) return;
-    
     try {
-      const { error } = await supabase
-        .from('registrations')
-        .update({ program_id: programId } as any)
-        .eq('id', registration.id);
-      
+      const {
+        error
+      } = await supabase.from('registrations').update({
+        program_id: programId
+      } as any).eq('id', registration.id);
       if (error) {
         toast.error('Error selecting job');
         return;
       }
-      
       toast.success('Job selected successfully');
       setShowJobDialog(false);
-      
+
       // Refresh registration data
       handleSearch();
     } catch (error) {
       toast.error('Error selecting job');
     }
   };
-
   const handleShareToWhatsApp = () => {
     if (!registration) return;
     const whatsappNumber = '7025715877';
@@ -253,27 +245,15 @@ const CheckStatus = () => {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Selected Job / തിരഞ്ഞെടുത്ത ജോലി</Label>
-                    {registration.programs ? (
-                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mt-1">
+                    {registration.programs ? <div className="border border-primary/20 rounded-lg p-3 mt-1 bg-cyan-300">
                         <p className="text-lg font-semibold">{registration.programs.name}</p>
-                        {registration.programs.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{registration.programs.description}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mt-2">
-                        <Button 
-                          onClick={handleSelectJob} 
-                          disabled={selectingJob}
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
+                        {registration.programs.description && <p className="text-sm text-muted-foreground mt-1">{registration.programs.description}</p>}
+                      </div> : <div className="mt-2">
+                        <Button onClick={handleSelectJob} disabled={selectingJob} variant="outline" size="sm" className="w-full">
                           <Briefcase className="w-4 h-4 mr-2" />
                           {selectingJob ? 'Loading...' : 'Select Job'}
                         </Button>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Registration Date</Label>
@@ -363,26 +343,14 @@ const CheckStatus = () => {
             <DialogTitle>Select Job / ജോലി തിരഞ്ഞെടുക്കുക</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            {programs.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
+            {programs.length === 0 ? <p className="text-center text-muted-foreground py-8">
                 No programs available for this category
-              </p>
-            ) : (
-              programs.map((program) => (
-                <Card 
-                  key={program.id} 
-                  className="cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => handleProgramSelect(program.id)}
-                >
+              </p> : programs.map(program => <Card key={program.id} className="cursor-pointer hover:border-primary transition-colors" onClick={() => handleProgramSelect(program.id)}>
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-lg mb-1">{program.name}</h3>
-                    {program.description && (
-                      <p className="text-sm text-muted-foreground">{program.description}</p>
-                    )}
+                    {program.description && <p className="text-sm text-muted-foreground">{program.description}</p>}
                   </CardContent>
-                </Card>
-              ))
-            )}
+                </Card>)}
           </div>
         </DialogContent>
       </Dialog>
