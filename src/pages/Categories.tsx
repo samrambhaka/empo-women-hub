@@ -18,9 +18,22 @@ interface Category {
   is_active: boolean;
 }
 
+interface Program {
+  id: string;
+  name: string;
+  description: string | null;
+  category_id: string;
+  sub_category_id: string;
+  is_top: boolean;
+  priority: number;
+}
+
 const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [showProgramDialog, setShowProgramDialog] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   const getOfferTimeRemaining = (endDate: string) => {
@@ -54,6 +67,28 @@ const Categories = () => {
 
   const handleRegisterClick = (category: Category) => {
     setSelectedCategory(category);
+    setSelectedProgram(null);
+    setShowRegistrationForm(true);
+  };
+
+  const handleSelectJobClick = async (category: Category) => {
+    setSelectedCategory(category);
+    const { data } = await supabase
+      .from('programs')
+      .select('*')
+      .eq('category_id', category.id)
+      .order('is_top', { ascending: false })
+      .order('priority', { ascending: false });
+    
+    if (data) {
+      setPrograms(data);
+      setShowProgramDialog(true);
+    }
+  };
+
+  const handleProgramSelect = (program: Program) => {
+    setSelectedProgram(program);
+    setShowProgramDialog(false);
     setShowRegistrationForm(true);
   };
 
@@ -160,24 +195,80 @@ const Categories = () => {
                     </div>
                   )}
 
-                  <Button 
-                    onClick={() => handleRegisterClick(category)}
-                    className={`w-full transition-all duration-300 ${
-                      isJobCard 
-                        ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
-                        : 'hover:transform hover:scale-105'
-                    }`}
-                    size="lg"
-                    variant={isJobCard ? 'outline' : 'default'}
-                  >
-                    രജിസ്റ്റർ ചെയ്യുക
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleSelectJobClick(category)}
+                      className={`flex-1 transition-all duration-300 ${
+                        isJobCard 
+                          ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
+                          : 'hover:transform hover:scale-105'
+                      }`}
+                      size="lg"
+                      variant={isJobCard ? 'outline' : 'outline'}
+                    >
+                      Select Job
+                    </Button>
+                    <Button 
+                      onClick={() => handleRegisterClick(category)}
+                      className={`flex-1 transition-all duration-300 ${
+                        isJobCard 
+                          ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
+                          : 'hover:transform hover:scale-105'
+                      }`}
+                      size="lg"
+                      variant={isJobCard ? 'outline' : 'default'}
+                    >
+                      രജിസ്റ്റർ ചെയ്യുക
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
       </div>
+
+      {/* Program Selection Dialog */}
+      <Dialog open={showProgramDialog} onOpenChange={setShowProgramDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              Select Job / ജോലി തിരഞ്ഞെടുക്കുക
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {programs.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No programs available for this category / ഈ വിഭാഗത്തിന് പ്രോഗ്രാമുകളൊന്നുമില്ല
+              </p>
+            ) : (
+              programs.map((program) => (
+                <Card 
+                  key={program.id}
+                  className="cursor-pointer hover:border-primary transition-colors"
+                  onClick={() => handleProgramSelect(program)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{program.name}</h3>
+                        {program.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{program.description}</p>
+                        )}
+                        {program.is_top && (
+                          <span className="inline-block mt-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Registration Form Dialog */}
       <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
@@ -190,6 +281,7 @@ const Categories = () => {
           {selectedCategory && (
             <RegistrationForm 
               category={selectedCategory}
+              program={selectedProgram}
               onSuccess={() => setShowRegistrationForm(false)}
             />
           )}
