@@ -713,6 +713,7 @@ export type Database = {
           mobile_number: string
           panchayath_id: string | null
           preference_category_id: string | null
+          program_id: string | null
           status: string
           updated_at: string
           ward: string
@@ -732,6 +733,7 @@ export type Database = {
           mobile_number: string
           panchayath_id?: string | null
           preference_category_id?: string | null
+          program_id?: string | null
           status?: string
           updated_at?: string
           ward: string
@@ -751,6 +753,7 @@ export type Database = {
           mobile_number?: string
           panchayath_id?: string | null
           preference_category_id?: string | null
+          program_id?: string | null
           status?: string
           updated_at?: string
           ward?: string
@@ -775,6 +778,13 @@ export type Database = {
             columns: ["preference_category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
             referencedColumns: ["id"]
           },
         ]

@@ -30,6 +30,7 @@ interface Registration {
   category_id: string;
   preference_category_id?: string;
   panchayath_id?: string;
+  program_id?: string;
   categories: {
     name_english: string;
     name_malayalam: string;
@@ -41,6 +42,10 @@ interface Registration {
   panchayaths?: {
     name: string;
     district: string;
+  };
+  programs?: {
+    name: string;
+    description: string;
   };
   registration_verifications?: {
     verified: boolean;
@@ -79,6 +84,7 @@ const RegistrationsTab = () => {
           categories!registrations_category_id_fkey (name_english, name_malayalam),
           preference_categories:categories!registrations_preference_category_id_fkey (name_english, name_malayalam),
           panchayaths (name, district),
+          programs (name, description),
           registration_verifications!registration_verifications_registration_id_fkey (verified, verified_by, verified_at)
         `)
         .order('created_at', { ascending: false });
@@ -762,6 +768,7 @@ const RegistrationsTab = () => {
                       <TableHead className="min-w-[200px]">Address</TableHead>
                       <TableHead className="min-w-[120px]">Panchayath</TableHead>
                       <TableHead className="min-w-[180px]">Category</TableHead>
+                      <TableHead className="min-w-[150px]">Selected Job</TableHead>
                       <TableHead className="min-w-[100px]">Status</TableHead>
                       <TableHead className="min-w-[80px]">Fee</TableHead>
                       <TableHead className="min-w-[140px]">Important Dates</TableHead>
@@ -816,6 +823,20 @@ const RegistrationsTab = () => {
                                 </div>
                               )}
                             </div>
+                          </TableCell>
+                          <TableCell className="p-2">
+                            {reg.programs ? (
+                              <div className="text-sm">
+                                <div className="font-medium truncate" title={reg.programs.name}>{reg.programs.name}</div>
+                                {reg.programs.description && (
+                                  <div className="text-xs text-muted-foreground truncate" title={reg.programs.description}>
+                                    {reg.programs.description}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Not selected</span>
+                            )}
                           </TableCell>
                            <TableCell>
                              <div className="space-y-1">
@@ -984,6 +1005,17 @@ const RegistrationsTab = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* Selected Job */}
+                      {reg.programs && (
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Selected Job:</div>
+                          <div className="text-sm font-medium">{reg.programs.name}</div>
+                          {reg.programs.description && (
+                            <div className="text-xs text-muted-foreground">{reg.programs.description}</div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Fee and Dates */}
                       <div className="flex justify-between items-center text-sm">
