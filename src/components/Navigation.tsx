@@ -14,9 +14,6 @@ const Navigation = () => {
     label: 'About Project',
     path: '/about'
   }, {
-    label: 'Select Job',
-    path: '/select-job'
-  }, {
     label: 'Categories',
     path: '/categories'
   }, {
