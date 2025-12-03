@@ -117,13 +117,8 @@ const AdminPanel = () => {
               </TabsTrigger>
             )}
             {canViewTransfers && (
-              <TabsTrigger value="category-transfers" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
-                Category Transfers
-              </TabsTrigger>
-            )}
-            {canViewTransfers && (
-              <TabsTrigger value="job-transfers" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
-                Job Transfers
+              <TabsTrigger value="transfers" className="flex-1 min-w-[120px] text-xs sm:text-sm px-2 sm:px-3">
+                Transfers
               </TabsTrigger>
             )}
           </TabsList>
@@ -177,14 +172,19 @@ const AdminPanel = () => {
           )}
           
           {canViewTransfers && (
-            <TabsContent value="category-transfers">
-              <CategoryTransferTab />
-            </TabsContent>
-          )}
-          
-          {canViewTransfers && (
-            <TabsContent value="job-transfers">
-              <JobTransferTab />
+            <TabsContent value="transfers">
+              <Tabs defaultValue="category-transfers" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="category-transfers">Category Transfers</TabsTrigger>
+                  <TabsTrigger value="job-transfers">Job Transfers</TabsTrigger>
+                </TabsList>
+                <TabsContent value="category-transfers">
+                  <CategoryTransferTab />
+                </TabsContent>
+                <TabsContent value="job-transfers">
+                  <JobTransferTab />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
           )}
         </Tabs>
