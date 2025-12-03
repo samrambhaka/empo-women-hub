@@ -96,15 +96,15 @@ const Categories = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">സ്വയം തൊഴിൽ വിഭാഗങ്ങൾ</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+      <div className="container mx-auto px-3 sm:px-4 py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">സ്വയം തൊഴിൽ വിഭാഗങ്ങൾ</h1>
+          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
             താങ്കൾക്ക് ആവശ്യമായ സ്വയംതൊഴിൽ മേഖല ഏതാണെന്ന് ഇവിടെനിന്ന് തിരഞ്ഞെടുക്കുക.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {categories.map((category, index) => {
             const isJobCard = category.name_english.toLowerCase().includes('job card');
             const offerActive = isOfferActive(category.offer_start_date, category.offer_end_date);
@@ -128,15 +128,15 @@ const Categories = () => {
                   key={category.id} 
                   className="border-2 border-muted bg-muted/30 opacity-75"
                 >
-                  <CardHeader>
-                    <CardTitle className="text-lg">
+                  <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                    <CardTitle className="text-base sm:text-lg">
                       <div className="text-muted-foreground">{category.name_english}</div>
-                      <div className="text-base font-normal mt-1 text-muted-foreground/80">
+                      <div className="text-sm sm:text-base font-normal mt-1 text-muted-foreground/80">
                         {category.name_malayalam}
                       </div>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 sm:p-6 pt-0">
                     <div className="flex flex-col items-center justify-center py-8">
                       <p className="text-center text-muted-foreground font-semibold mb-2">
                         Will be active soon
@@ -159,15 +159,15 @@ const Categories = () => {
                     : `glass-card category-hover ${colorClass}`
                 }`}
               >
-                <CardHeader>
-                  <CardTitle className="text-lg">
+                <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                  <CardTitle className="text-base sm:text-lg">
                     <div className={isJobCard ? 'font-bold text-black' : ''}>{category.name_english}</div>
-                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-black/80' : 'opacity-80'}`}>
+                    <div className={`text-sm sm:text-base font-normal mt-1 ${isJobCard ? 'text-black/80' : 'opacity-80'}`}>
                       {category.name_malayalam}
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {category.description && (
                     <p className={`mb-4 ${isJobCard ? 'text-black/90' : 'opacity-90'}`}>{category.description}</p>
                   )}
@@ -195,7 +195,7 @@ const Categories = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button 
                       onClick={() => handleSelectJobClick(category)}
                       className={`flex-1 transition-all duration-300 ${
@@ -203,7 +203,7 @@ const Categories = () => {
                           ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
                           : 'hover:transform hover:scale-105'
                       }`}
-                      size="lg"
+                      size="default"
                       variant={isJobCard ? 'outline' : 'outline'}
                     >
                       Select Job
@@ -215,7 +215,7 @@ const Categories = () => {
                           ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
                           : 'hover:transform hover:scale-105'
                       }`}
-                      size="lg"
+                      size="default"
                       variant={isJobCard ? 'outline' : 'default'}
                     >
                       രജിസ്റ്റർ ചെയ്യുക
