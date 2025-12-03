@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import CategoryTransferRequest from '@/components/CategoryTransferRequest';
+import JobTransferRequest from '@/components/JobTransferRequest';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,15 +246,28 @@ const CheckStatus = () => {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Selected Job / തിരഞ്ഞെടുത്ത ജോലി</Label>
-                    {registration.programs ? <div className="border border-primary/20 rounded-lg p-3 mt-1 bg-cyan-300">
-                        <p className="text-lg font-semibold">{registration.programs.name}</p>
-                        {registration.programs.description && <p className="text-sm text-muted-foreground mt-1">{registration.programs.description}</p>}
-                      </div> : <div className="mt-2">
+                    {registration.programs ? (
+                      <div>
+                        <div className="border border-primary/20 rounded-lg p-3 mt-1 bg-cyan-300">
+                          <p className="text-lg font-semibold">{registration.programs.name}</p>
+                          {registration.programs.description && <p className="text-sm text-muted-foreground mt-1">{registration.programs.description}</p>}
+                        </div>
+                        {/* Job Transfer Request Option */}
+                        <JobTransferRequest 
+                          registration={registration} 
+                          onTransferRequested={() => {
+                            toast.success('Job transfer request submitted');
+                          }} 
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-2">
                         <Button onClick={handleSelectJob} disabled={selectingJob} variant="outline" size="sm" className="w-full">
                           <Briefcase className="w-4 h-4 mr-2" />
                           {selectingJob ? 'Loading...' : 'Select Job'}
                         </Button>
-                      </div>}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Registration Date</Label>

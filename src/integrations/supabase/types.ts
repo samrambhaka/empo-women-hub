@@ -539,6 +539,57 @@ export type Database = {
           },
         ]
       }
+      job_transfer_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          from_program_id: string
+          full_name: string
+          id: string
+          mobile_number: string
+          processed_at: string | null
+          processed_by: string | null
+          reason: string | null
+          registration_id: string
+          requested_at: string
+          status: string
+          to_program_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          from_program_id: string
+          full_name: string
+          id?: string
+          mobile_number: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reason?: string | null
+          registration_id: string
+          requested_at?: string
+          status?: string
+          to_program_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          from_program_id?: string
+          full_name?: string
+          id?: string
+          mobile_number?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reason?: string | null
+          registration_id?: string
+          requested_at?: string
+          status?: string
+          to_program_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       panchayaths: {
         Row: {
           created_at: string
