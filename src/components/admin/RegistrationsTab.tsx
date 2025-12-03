@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, FileDown, Edit, Trash2, Check, X, RotateCcw, FileText, CheckSquare } from 'lucide-react';
+import { Search, FileDown, Edit, Trash2, Check, X, RotateCcw, FileText, CheckSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import EditRegistrationDialog from './EditRegistrationDialog';
@@ -67,6 +67,8 @@ const RegistrationsTab = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [expiryFilter, setExpiryFilter] = useState('');
   const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchRegistrations();
@@ -565,6 +567,17 @@ const RegistrationsTab = () => {
     return matchesSearch && matchesStatus && matchesCategory && matchesPanchayath && matchesExpiry;
   });
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, categoryFilter, panchayathFilter, expiryFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRegistrations = filteredRegistrations.slice(startIndex, endIndex);
+
   const stats = {
     total: filteredRegistrations.length,
     pending: filteredRegistrations.filter(r => r.status === 'pending').length,
@@ -776,7 +789,7 @@ const RegistrationsTab = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredRegistrations.map((reg) => {
+                    {paginatedRegistrations.map((reg) => {
                       const categoryColor = getCategoryColor(reg.categories?.name_english || '');
                       return (
                         <TableRow key={reg.id} className={`${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`}>
@@ -952,7 +965,7 @@ const RegistrationsTab = () => {
 
             {/* Mobile Card View */}
             <div className="lg:hidden space-y-4 p-4">
-              {filteredRegistrations.map((reg) => {
+              {paginatedRegistrations.map((reg) => {
                 const categoryColor = getCategoryColor(reg.categories?.name_english || '');
                 return (
                   <Card key={reg.id} className={`${categoryColor.bg} ${categoryColor.border}`}>
@@ -1096,6 +1109,38 @@ const RegistrationsTab = () => {
               })}
             </div>
           </>
+        )}
+
+        {/* Pagination Controls */}
+        {filteredRegistrations.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredRegistrations.length)} of {filteredRegistrations.length} registrations
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-sm px-2">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage >= totalPages}
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
         )}
       </CardContent>
 
