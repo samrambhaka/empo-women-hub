@@ -13,6 +13,7 @@ import AccountsTab from '@/components/admin/AccountsTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import AdminUsersTab from '@/components/admin/AdminUsersTab';
 import CategoryTransferTab from '@/components/admin/CategoryTransferTab';
+import JobTransferTab from '@/components/admin/JobTransferTab';
 import NotificationBell from '@/components/admin/NotificationBell';
 
 const AdminPanel = () => {
@@ -172,7 +173,10 @@ const AdminPanel = () => {
           
           {canViewTransfers && (
             <TabsContent value="transfers">
-              <CategoryTransferTab />
+              <div className="space-y-8">
+                <CategoryTransferTab />
+                <JobTransferTab />
+              </div>
             </TabsContent>
           )}
         </Tabs>
